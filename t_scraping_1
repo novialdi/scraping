@@ -1,0 +1,107 @@
+#---SCRAPING---
+
+#install library and download webdriver
+  from selenium import webdriver
+  from bs4 import BeautifulSoup
+  import pandas as pd
+  driver = webdriver.Chrome("C:/Users/Novialdi/Downloads/Compressed/chromedriver")
+  source= 'https://covid19.tapteng.go.id/public/'
+  driver.get(source)
+  driver.find_element_by_xpath('//*[@class="table-responsive-md"]/div/div[1]/div[1]/div/label/select/option[@value ="25"]').click()
+
+  content = driver.page_source
+  soup = BeautifulSoup(content)
+  div = soup.find('table', class_='table table-striped table-bordered dataTable no-footer')
+  links=div.find_all('td')
+
+#check
+  link
+
+#create list
+  scrape_date = []
+  date_update = []
+  waktu = []
+  kabkot = []
+  kecamatan = []
+  total_odp = []
+  total_pdp = []
+  total_positif = []
+  positif_sembuh = []
+  positif_dirawat = []
+  positif_isolasi = []
+  positif_meninggal = []
+  total_otg = []
+  total_odr = []
+  total_pp = []
+  total_ppdt = []
+  types = []
+  source_link = []
+
+#find time and date
+  date = soup.find('p',class_ = 'text-center')
+  date = soup.find('p',class_ = 'text-center')
+  date1 = date.find('strong')
+  a = date1.text[19:30]
+  if 'Jun' in a:
+      a=a.replace(" Jun 2020","/06/2020")
+  else: a=a.replace(" Jul 2020","/07/2020")
+  b= date1.text[31:36]
+
+#to table time scraping 
+#install datetime  
+  from datetime import datetime
+  now = datetime.now().strftime('%d/%m/%Y')
+
+#append data to list
+  for i, link in enumerate(links):
+      if i in range(1, len(links), 8):
+          kecamatan.append(link.get_text().lower().capitalize())
+      if i in range(4, len(links), 8):
+          total_odp.append(link.get_text())
+      if i in range(6, len(links), 8):
+          total_pdp.append(link.get_text())
+      if i in range(7, len(links), 8):
+          total_positif.append(link.get_text())
+      if i in range(2, len(links), 8):
+          total_otg.append(link.get_text())
+      if i in range(1, len(links), 8):
+          positif_sembuh.append('')
+      if i in range(1, len(links), 8):
+          positif_dirawat.append('')
+      if i in range(1, len(links), 8):
+          positif_isolasi.append('')
+      if i in range(1, len(links), 8):
+          positif_meninggal.append('')
+      if i in range(1, len(links), 8):
+          types.append('Kecamatan')
+      if i in range(1, len(links), 8):
+          kabkot.append('Tapanuli Tengah')
+      if i in range(1, len(links), 8):
+          scrape_date.append(now)
+      if i in range(1, len(links), 8):
+          date_update.append(a)
+      if i in range(1, len(links), 8):
+          waktu.append(b)
+      if i in range(1, len(links), 8):
+          source_link.append(source)
+
+#create table
+  df = pd.DataFrame()
+  df['scrape_date'] = scrape_date
+  df['date_update'] = date_update
+  df['waktu'] = waktu
+  df['kabkot'] = kabkot
+  df['Kecamatan'] = kecamatan
+  df['total_odp'] = total_odp
+  df['total_pdp'] = total_pdp
+  df['total_positif'] = total_positif
+  df['positif_sembuh'] = positif_sembuh
+  df['positif_dirawat'] = positif_dirawat
+  df['positif_isolasi'] = positif_isolasi
+  df['positif_meninggal'] = positif_meninggal
+  df['total_otg'] = total_otg
+  df['source_link'] = source_link
+  df['types'] = types
+  
+ #Output
+  df

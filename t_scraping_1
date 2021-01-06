@@ -46,7 +46,7 @@ a = date1.text[19:30].split()
 bulan = ['januari', 'februari', 'maret', 'april', 'mei', 'juni','juli','agustus', 'september', 'oktober','november','desember']
 bulansingkat = ['jan', 'feb', 'mar', 'apr', 'mei', 'jun','jul','agu', 'sep', 'okt','nov','des']
 bln = bulansingkat.index(a[1].lower())+1
-date_update = (a[2]+'-'+str(bln)+'-'+a[0]).strptime('%Y-%m-%d')
+date_update = a[2]+'-'+str(bln)+'-'+a[0]
 
 #to table time scraping 
 #install datetime  

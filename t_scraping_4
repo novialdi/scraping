@@ -1,0 +1,56 @@
+from bs4 import BeautifulSoup
+import requests
+import json
+from pandas.io.json import json_normalize
+import pandas as pd
+from datetime import datetime
+from sqlalchemy import create_engine 
+import time
+import pymysql.cursors
+import mysql.connector
+import re
+
+
+# In[10]:
+
+date_now =datetime.now().strftime("%Y-%m-%d")
+res = requests.get("https://covid19.majalengkakab.go.id", verify = False)
+so = BeautifulSoup(res.content,'html.parser')
+tabel = so.find('table', {'class':'table table-bordered table-striped table-hover'})
+scrap = tabel.find_all('tr') 
+ap = []
+for tr in scrap[2:]:
+    td = tr.find_all('td')
+    row = [i.text for i in td]
+    ap.append({'kecamatan':row[1],
+               'total_positif':row[2],
+               'positif_dirawat':row[3],
+               'positif_sembuh':row[4],
+               'positif_meninggal':row[5],
+               'suspek':row[7],
+               'total_odp':row[11],
+               'probable':row[14]})
+
+rapi = pd.DataFrame(ap)
+
+rapi['total_positif'] = pd.to_numeric(rapi['total_positif'])
+rapi['positif_dirawat'] = pd.to_numeric(rapi['positif_dirawat'])
+rapi['positif_sembuh'] = pd.to_numeric(rapi['positif_sembuh'])
+rapi['positif_meninggal'] = pd.to_numeric(rapi['positif_meninggal'])
+rapi['suspek'] = pd.to_numeric(rapi['suspek'])
+rapi['probable'] = pd.to_numeric(rapi['probable'])
+rapi['total_odp'] = pd.to_numeric(rapi['total_odp'])
+rapi['total_pdp'] = rapi['suspek']+rapi['probable']
+
+del rapi['suspek']
+del rapi['probable']
+
+rapi.insert(loc=0, column='scrape_date', value=datetime.now().strftime("%Y-%m-%d"))
+rapi.insert(loc=1, column='date_update', value = datetime.now().strftime("%Y-%m-%d"))
+rapi.insert(loc=2, column='provinsi', value='JAWA BARAT')
+rapi.insert(loc=3, column='kabkot', value='MAJALENGKA')
+rapi.insert(loc=4, column='source_link', value='https://covid19.majalengkakab.go.id')
+rapi.insert(loc=5, column='types', value='kecamatan')
+rapi.insert(loc=6, column='user_pic', value = 'Nisa' )
+
+rapi

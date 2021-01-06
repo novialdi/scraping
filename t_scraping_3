@@ -1,0 +1,67 @@
+from bs4 import BeautifulSoup
+import requests
+import json
+from pandas.io.json import json_normalize
+import pandas as pd
+from datetime import datetime
+from sqlalchemy import create_engine 
+import time
+import pymysql.cursors
+import mysql.connector
+import re
+
+
+date_now = datetime.now().strftime("%d/%m/%Y")
+odp = requests.get("https://covid19.tangerangkab.go.id/sebaran-data", verify=False)
+soup = BeautifulSoup(odp.content, 'html.parser')
+table = soup.find('table',{'class':'table table-responsive table-stripped table-bordered'})
+table_rows = table.find_all('tr')
+ap = []
+for tr in table_rows:
+    td =tr.find_all('td')
+    row = [i.text for i in td]
+    try:
+        row[2] = re.findall(r'\d+|-',row[2])[0]
+    except:
+        pass
+    try:
+        row[3] = re.findall(r'\d+|-',row[3])[0]
+    except:
+        pass
+    try:
+        row[4] = re.findall(r'\d+|-',row[4])[0]
+    except:
+        pass
+    try:
+        row[5] = re.findall(r'\d+|-',row[5])[0]
+    except:
+        pass
+    try:
+        row[6] = re.findall(r'\d+|-',row[6])[0]
+    except:
+        pass
+    try:
+        row[7] = re.findall(r'\d+|-',row[7])[0]
+    except:
+        pass
+    try:
+        row[8] = re.findall(r'\d+|-',row[8])[0]
+    except:
+        pass
+    ap.append(row)
+    
+data = pd.DataFrame(ap)
+
+data.columns = ['no','kecamatan','total_pdp','positif_dirawat','positif_isolasi','positif_sembuh','positif_meninggal','total_positif','total']
+del data['no']
+del data['total']
+data=data.drop(index=[0,30])
+data.replace({'-': '0'}, inplace=True)
+data.insert(loc=0, column='scrape_date', value= datetime.now().strftime("%Y-%m-%d"))
+data.insert(loc=1, column='date_update', value = datetime.now().strftime("%Y-%m-%d"))
+data.insert(loc=2, column='provinsi', value='BANTEN')
+data.insert(loc=3, column='kabkot', value = 'TANGERANG')
+data.insert(loc=4, column='types', value='Kecamatan')
+data.insert(loc=5, column='source_link', value='https://covid19.tangerangkab.go.id/')
+data.insert(loc=6, column='user_pic', value = 'Nisa' )
+data
